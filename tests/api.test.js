@@ -1,8 +1,10 @@
 const request = require('supertest');
-const express = require('express');
-const router = require('../src/routes/api');
 const config = require('../src/config/config');
+const createApp = require('../src/app');
 const apiRoute = config.server.apiRoute;
+
+// Set environment to test
+process.env.NODE_ENV = 'test';
 
 // Mock all required models
 jest.mock('../src/models/list_tech', () => ({
@@ -32,9 +34,8 @@ jest.mock('../src/models/list_contract_type', () => ({
   queryListContractTypeByUniqueId: jest.fn()
 }));
 
-const app = express();
-app.use(express.json());
-app.use('/api', router);
+// Create the app using the createApp function
+const app = createApp();
 
 // Create a server to properly close it later
 const server = app.listen(0);
@@ -218,6 +219,9 @@ describe('API Endpoints', () => {
     } catch (error) {
       console.warn('Error closing Redis connection:', error.message);
     }
+    
+    // Reset environment variable
+    delete process.env.NODE_ENV;
 
     // Close Express server
     if (server) {

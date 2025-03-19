@@ -1,6 +1,6 @@
 const config = require('../config/config');
 const {DatabaseError} = require('../errors/customErrors');
-const BigQueryService = require('../services/bigQueryService');
+const bigQueryService = require('../services/bigQueryService').getInstance();
 
 const schemaName = config.database.schema;
 

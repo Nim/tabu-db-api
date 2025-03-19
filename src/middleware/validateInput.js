@@ -1,28 +1,58 @@
 const { ValidationError } = require('../errors/customErrors');
 
+/**
+ * Validates if a string is a valid email address
+ * @param {string} email - The email address to validate
+ * @returns {boolean} - Whether the email is valid
+ */
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+
+/**
+ * Middleware to validate request inputs for different endpoints
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
 const validateInput = (req, res, next) => {
   const { email, unique_id } = req.body;
+  const path = req.path;
 
-  // Validate email for user/check endpoint
-  if (req.path === '/user/check' && !email) {
-    throw new ValidationError('Email parameter is required');
+  // User endpoint validations
+  if (path === '/user/check') {
+    if (!email) {
+      throw new ValidationError('Email parameter is required');
+    }
+    
+    if (!isValidEmail(email)) {
+      throw new ValidationError('Invalid email format provided');
+    }
   }
 
-  // Validate unique_id for submission/check endpoint
-  if (req.path === '/submission/check' && !unique_id) {
-    throw new ValidationError('unique_id parameter is required for submission check');
+  // Endpoints requiring unique_id validation
+  const uniqueIdRequiredEndpoints = [
+    { path: '/submission/check', name: 'submission' },
+    { path: '/additional_position/check', name: 'additional position' },
+    { path: '/salary/check', name: 'salary' }
+  ];
+
+  const currentEndpoint = uniqueIdRequiredEndpoints.find(endpoint => endpoint.path === path);
+  
+  if (currentEndpoint) {
+    if (!unique_id) {
+      throw new ValidationError(`unique_id parameter is required for ${currentEndpoint.name} check`);
+    }
   }
 
-  // Validate unique_id for additional_position/check endpoint
-  if (req.path === '/additional_position/check' && !unique_id) {
-    throw new ValidationError('unique_id parameter is required for additional position check');
+  // Additional validations for query parameters if needed
+  if (path.includes('/query') && Object.keys(req.query).length === 0) {
+    throw new ValidationError('At least one query parameter is required');
   }
 
-  // Validate unique_id for salary/check endpoint
-  if (req.path === '/salary/check' && !unique_id) {
-    throw new ValidationError('unique_id parameter is required for salary check');
-  }
-
+  // Proceed if all validations pass
   next();
 };
 

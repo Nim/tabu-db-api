@@ -1,23 +1,30 @@
-function responseDataAmountFiltersData(success, message, exists, method, error, data_amount, salary_net_avg, salary_net_median, salary_gross_avg, salary_gross_median) {
+const { errorResponseDTO } = require('./error');
+
+function successDataAmountFiltersDTO(message, action, data) {
   return {
-    success,
+    success: true,
     response: {
       message,
-      exists,
+      exists: true,
       data: {
-        data_amount,
-        salary_net_avg,
-        salary_net_median,
-        salary_gross_avg,
-        salary_gross_median
+        data_amount: data.data_amount,
+        salary_net_avg: data.salary_net_avg,
+        salary_net_median: data.salary_net_median,
+        salary_gross_avg: data.salary_gross_avg,
+        salary_gross_median: data.salary_gross_median
       }
     },
     type: 'data_amount_filters',
-    action: method,
-    error
+    action,
+    error: null
   };
 }
 
+function errorDataAmountFiltersDTO(message, action, error) {
+  return errorResponseDTO(false, message, action, error);
+}
+
 module.exports = {
-  responseDataAmountFiltersData,
+  successDataAmountFiltersDTO,
+  errorDataAmountFiltersDTO
 };

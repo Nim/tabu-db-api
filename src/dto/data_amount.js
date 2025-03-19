@@ -1,17 +1,24 @@
-function responseDataAmountData(success, message, exists, method, error, amount) {
+const { errorResponseDTO } = require('./error');
+
+function successDataAmountDTO(message, amount, action) {
   return {
-    success,
+    success: true,
     message,
-    exists,
-    action: method,
+    exists: true,
     type: 'data_amount',
-    error,
+    action,
     data: {
-      amount: amount,
-    }
+      amount
+    },
+    error: null
   };
 }
 
+function errorDataAmountDTO(message, action, error) {
+  return errorResponseDTO(false, message, action, error);
+}
+
 module.exports = {
-  responseDataAmountData,
+  successDataAmountDTO,
+  errorDataAmountDTO
 };

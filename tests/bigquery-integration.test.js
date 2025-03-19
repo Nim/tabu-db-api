@@ -1,6 +1,5 @@
 const request = require('supertest');
-const express = require('express');
-const router = require('../src/routes/api');
+const createApp = require('../src/app');
 const config = require('../src/config/config');
 const { queryBigQuery } = require('../src/models/bigQuery');
 const apiRoute = config.server.apiRoute;
@@ -8,12 +7,14 @@ const apiRoute = config.server.apiRoute;
 // This test uses a real BigQuery connection, no mocking!
 describe('BigQuery Pagination Integration Tests', () => {
   let app;
+  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeAll(() => {
-    // Create Express app with the real router
-    app = express();
-    app.use(express.json());
-    app.use(apiRoute, router);
+    // Set NODE_ENV to test to load the test environment routes
+    process.env.NODE_ENV = 'test';
+    
+    // Create app using the createApp function
+    app = createApp();
 
     // Ensure we're using the real BigQuery model, not a mock
     jest.unmock('../src/models/bigQuery');
@@ -147,6 +148,9 @@ describe('BigQuery Pagination Integration Tests', () => {
   });
   
   afterAll(async () => {
+    // Restore original NODE_ENV
+    process.env.NODE_ENV = originalNodeEnv;
+    
     // Close Redis connection if it was used
     try {
       const redis = require('../src/config/redis');

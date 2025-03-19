@@ -1,53 +1,69 @@
 const { ValidationError, NotFoundError, DatabaseError } = require('../errors/customErrors');
+const logger = require('../config/logger');
 
 const errorHandler = (err, req, res, next) => {
-  if (err instanceof ValidationError) {
-    return res.status(400).json({
-      success: false,
-      statusCode: 400,
-      type: 'VALIDATION_ERROR',
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  // Add extra logging for test environment
+  if (process.env.NODE_ENV === 'test') {
+    console.error('ERROR HANDLER CAUGHT:', {
       message: err.message,
-      errors: err.errors,
-      timestamp: new Date().toISOString(),
-      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+      stack: err.stack,
+      name: err.name,
+      status: err.status,
       path: req.path,
+      method: req.method,
+      query: req.query,
+      params: req.params
     });
   }
 
-  if (err instanceof NotFoundError) {
-    return res.status(404).json({
-      success: false,
-      statusCode: 404,
-      type: 'NOT_FOUND_ERROR',
-      message: err.message,
-      timestamp: new Date().toISOString(),
-      path: req.path,
-    });
-  }
+  // Log the error
+  logger.error(err.message, {
+    path: req.path,
+    method: req.method,
+    errorType: err.constructor.name,
+    ...(isDev && { stack: err.stack })
+  });
 
-  if (err instanceof DatabaseError) {
-    return res.status(500).json({
-      success: false,
-      statusCode: 500,
-      type: 'DATABASE_ERROR',
-      message: err.message,
-      cause: process.env.NODE_ENV === 'production' ? undefined : err.cause,
-      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-      timestamp: new Date().toISOString(),
-      path: req.path,
-    });
-  }
-
-  return res.status(500).json({
+  // Base error response
+  const errorResponse = {
     success: false,
     statusCode: 500,
     type: 'INTERNAL_SERVER_ERROR',
-    message: 'Internal Server Error',
-    cause: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+    message: isDev ? err.message : 'Internal Server Error',
     timestamp: new Date().toISOString(),
-    path: req.path,
-  });
+    path: req.path
+  };
+
+  // Customize response based on error type
+  if (err instanceof ValidationError) {
+    errorResponse.statusCode = 400;
+    errorResponse.type = 'VALIDATION_ERROR';
+    errorResponse.message = err.message; // Always show validation messages
+    if (isDev && err.errors) {
+      errorResponse.errors = err.errors;
+    }
+  } else if (err instanceof NotFoundError) {
+    errorResponse.statusCode = 404;
+    errorResponse.type = 'NOT_FOUND_ERROR';
+    errorResponse.message = err.message; // Always show not found messages
+  } else if (err instanceof DatabaseError) {
+    errorResponse.statusCode = 500;
+    errorResponse.type = 'DATABASE_ERROR';
+    errorResponse.message = err.message; // Always show database error messages
+    if (isDev && err.cause) {
+      errorResponse.cause = err.cause;
+    }
+  }
+
+  // Add stack trace only in non-production environments
+  if (isDev && err.stack) {
+    errorResponse.stack = err.stack;
+  }
+
+  return res.status(errorResponse.statusCode).json(errorResponse);
 };
 
 module.exports = errorHandler;
+

@@ -35,8 +35,24 @@ require('dotenv').config();
 * @typedef {Object} PaginationConfig
 * @property {number} limit - Default number of items per page
 * @property {number} offset - Default offset for pagination
+* @property {number} maxLimit - Maximum allowed items per page
 */
 
+/**
+* @typedef {Object} BigQueryConfig
+* @property {string} projectId - Google Cloud project ID
+* @property {string} defaultDataset - Default dataset to use if not specified
+* @property {number} maxConnections - Maximum number of concurrent connections
+* @property {number} minConnections - Minimum number of connections to maintain
+* @property {number} queryTimeout - Query timeout in milliseconds
+* @property {number} maxRows - Maximum rows to return in a single query
+*/
+
+/**
+* @typedef {Object} TableConfig
+* @property {string[]} allowedTables - List of tables that can be queried
+* @property {number} maxFileSize - Maximum file size for exports in bytes
+*/
 /**
 * @typedef {Object} AppConfig
 * @property {ServerConfig} server - Server-related configuration
@@ -44,6 +60,8 @@ require('dotenv').config();
 * @property {RateLimitingConfig} rateLimiting - Rate limiting configuration
 * @property {Object} cache - Cache configuration
 * @property {PaginationConfig} pagination - Pagination configuration
+* @property {BigQueryConfig} bigQuery - BigQuery-specific configuration
+* @property {TableConfig} tables - Table-specific configuration
 */
 
 /**
@@ -100,6 +118,12 @@ const config = {
 */
 server: {
     /**
+    * Environment mode flags
+    */
+    isProduction: process.env.NODE_ENV === 'production',
+    isDevelopment: process.env.NODE_ENV !== 'production',
+
+    /**
     * Port the server will listen on
     * @default 3001
     */
@@ -131,6 +155,29 @@ server: {
 },
 
 /**
+* API and Documentation configuration
+*/
+api: {
+    /**
+    * Production API URL for Swagger documentation
+    * @default 'https://api.beta.tabu.nimes.ink'
+    */
+    productionUrl: process.env.PRODUCTION_API_URL || 'https://api.beta.tabu.nimes.ink',
+    
+    /**
+    * Main website URL
+    * @default 'https://beta.tabu.nimes.ink'
+    */
+    websiteUrl: process.env.WEBSITE_URL || 'https://beta.tabu.nimes.ink',
+    
+    /**
+    * Support email address
+    * @default 'info@nimesin.com'
+    */
+    supportEmail: process.env.SUPPORT_EMAIL || 'info@nimesin.com',
+},
+
+/**
 * Database configuration settings
 */
 database: {
@@ -145,6 +192,45 @@ database: {
     * @default 'app_demo'
     */
     schema: process.env.DB_SCHEMA || 'app_demo'
+},
+
+/**
+* BigQuery-specific configuration
+*/
+bigQuery: {
+    /**
+    * Google Cloud project ID
+    */
+    projectId: process.env.BIGQUERY_PROJECT_ID,
+
+    /**
+    * Default dataset to use if not specified
+    */
+    defaultDataset: process.env.BIGQUERY_DEFAULT_DATASET,
+
+    /**
+    * Maximum number of concurrent connections
+    * @default 5
+    */
+    maxConnections: parseInt(process.env.BIGQUERY_MAX_CONNECTIONS || '5', 10),
+
+    /**
+    * Minimum number of connections to maintain
+    * @default 2
+    */
+    minConnections: parseInt(process.env.BIGQUERY_MIN_CONNECTIONS || '2', 10),
+
+    /**
+    * Query timeout in milliseconds
+    * @default 30000 (30 seconds)
+    */
+    queryTimeout: parseInt(process.env.BIGQUERY_QUERY_TIMEOUT || '30000', 10),
+
+    /**
+    * Maximum rows to return in a single query (for pagination)
+    * @default 1000
+    */
+    maxRows: parseInt(process.env.BIGQUERY_MAX_ROWS || '1000', 10)
 },
 
 /**
@@ -194,7 +280,35 @@ pagination: {
     * Default offset for pagination
     * @default 0
     */
-    offset: parseInt(process.env.PAGINATION_OFFSET || '0', 10)
+    offset: parseInt(process.env.PAGINATION_OFFSET || '0', 10),
+
+    /**
+    * Maximum allowed items per page
+    * @default 500
+    */
+    maxLimit: parseInt(process.env.MAX_PAGE_LIMIT || '500', 10)
+},
+
+/**
+* Table-specific configuration
+*/
+tables: {
+    /**
+    * List of allowed tables that can be queried
+    * @default ['submissions', 'salaries', 'employees', 'departments']
+    */
+    allowedTables: process.env.ALLOWED_TABLES ? process.env.ALLOWED_TABLES.split(',') : [
+        'submissions',
+        'salaries',
+        'employees',
+        'departments'
+    ],
+
+    /**
+    * Maximum file size for CSV exports in bytes
+    * @default 10485760 (10MB)
+    */
+    maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760', 10)
 },
 };
 
@@ -205,7 +319,8 @@ Object.freeze(config.rateLimiting);
 Object.freeze(config.cache.durations);
 Object.freeze(config.cache);
 Object.freeze(config.pagination);
-// config.server and config will be frozen after port initialization
+Object.freeze(config.bigQuery);
+Object.freeze(config.tables);
 
 // Export the getAvailablePort function and the config object
 module.exports = {

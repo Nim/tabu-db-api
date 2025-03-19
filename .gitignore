@@ -10,3 +10,4 @@ docker-compose.yaml
 nginx.conf/
 tests.disabled/
 coverage/
+app.log

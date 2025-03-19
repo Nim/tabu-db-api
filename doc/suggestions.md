@@ -97,7 +97,7 @@ Based on the code analysis, here are several improvement recommendations for the
 
 ## 5. Architecture Improvements
 
-- **Service Layer**: Add a service layer between routes and models to encapsulate business logic and make the code more maintainable.
+- **[WIP] Service Layer**: Add a service layer between routes and models to encapsulate business logic and make the code more maintainable.
 
 - **DTO Consistency**: Ensure all responses use consistent DTO patterns for better API predictability.
 
@@ -125,7 +125,7 @@ After implementing the centralized configuration approach:
 
 - **Testing**: Run application tests to ensure all components work correctly with the new configuration system. Create specific tests for different configuration scenarios.
 
-- **Documentation Updates**: Add details in the project README about the centralized configuration pattern, available configuration options, and how to properly set environment variables.
+- **Documentation Updates**: Add details in the project doc/ files about the centralized configuration pattern, available configuration options, and how to properly set environment variables.
 
 - **Further Centralization**: Identify other parts of the codebase that might benefit from centralization:
   - Error message templates

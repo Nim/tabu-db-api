@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="9" failures="0" errors="0" time="4.234">
+  <testsuite name="Swagger Documentation Tests" errors="0" failures="0" skipped="0" timestamp="2025-03-19T08:56:20" time="4.043" tests="9">
+    <testcase classname="Swagger Documentation Tests Development Environment should serve Swagger JSON at /swagger/json" name="Swagger Documentation Tests Development Environment should serve Swagger JSON at /swagger/json" time="0.042">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Development Environment should serve Swagger UI at /swagger/" name="Swagger Documentation Tests Development Environment should serve Swagger UI at /swagger/" time="0.007">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Development Environment should serve regular API endpoints" name="Swagger Documentation Tests Development Environment should serve regular API endpoints" time="0.004">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Development Environment should have API paths defined" name="Swagger Documentation Tests Development Environment should have API paths defined" time="0.005">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Development Environment should not have duplicate /api prefixes" name="Swagger Documentation Tests Development Environment should not have duplicate /api prefixes" time="0.005">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Production Environment should block Swagger UI access in production - base path" name="Swagger Documentation Tests Production Environment should block Swagger UI access in production - base path" time="0.021">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Production Environment should block Swagger UI access in production - with trailing slash" name="Swagger Documentation Tests Production Environment should block Swagger UI access in production - with trailing slash" time="0.004">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Production Environment should not serve Swagger JSON in production" name="Swagger Documentation Tests Production Environment should not serve Swagger JSON in production" time="0.02">
+    </testcase>
+    <testcase classname="Swagger Documentation Tests Production Environment should serve regular API endpoints" name="Swagger Documentation Tests Production Environment should serve regular API endpoints" time="0.015">
+    </testcase>
+  </testsuite>
+</testsuites>

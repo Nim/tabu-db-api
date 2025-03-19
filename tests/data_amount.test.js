@@ -20,15 +20,26 @@ app.use('/api', router);
 
 // Add error middleware similar to what's in the application
 app.use((err, req, res, next) => {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
   const statusCode = err.statusCode || 500;
+  
   const errorResponse = {
     success: false,
-    message: err.message
+    message: err.message,
+    exists: false,
+    action: req.method,
+    type: err.type || 'ERROR',
+    error: {
+      status: statusCode,
+      message: err.message || 'Internal Server Error',
+      ...(isDevelopment ? {
+        stack: err.stack,
+        timestamp: new Date().toISOString(),
+        path: req.path,
+        details: err.details
+      } : {})
+    }
   };
-  
-  if (err.details) {
-    errorResponse.details = err.details;
-  }
   
   res.status(statusCode).json(errorResponse);
 });
@@ -94,8 +105,17 @@ describe('Data Amount API Endpoints', () => {
         .send({ unique_id: validUniqueId });
 
       expect(response.status).toBe(500);
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBeDefined();
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Database error',
+        exists: false,
+        action: 'POST',
+        type: 'ERROR',
+        error: {
+          status: 500,
+          message: 'Database error'
+        }
+      });
     });
 
     it('should return 404 when no data is found', async () => {
@@ -107,8 +127,17 @@ describe('Data Amount API Endpoints', () => {
         .send({ unique_id: validUniqueId });
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBeDefined();
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Data amount not found',
+        exists: false,
+        action: 'POST',
+        type: 'ERROR',
+        error: {
+          status: 404,
+          message: 'Data amount not found'
+        }
+      });
     });
   });
 
@@ -268,8 +297,17 @@ describe('Data Amount API Endpoints', () => {
         .send(validRequestWithPositionGroup);
 
       expect(response.status).toBe(500);
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBeDefined();
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Database error',
+        exists: false,
+        action: 'POST',
+        type: 'ERROR',
+        error: {
+          status: 500,
+          message: 'Database error'
+        }
+      });
     });
 
     it('should return 404 when no data is found', async () => {
@@ -281,8 +319,17 @@ describe('Data Amount API Endpoints', () => {
         .send(validRequestWithPositionGroup);
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBeDefined();
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'No data found',
+        exists: false,
+        action: 'POST',
+        type: 'ERROR',
+        error: {
+          status: 404,
+          message: 'No data found'
+        }
+      });
     });
   });
 });
